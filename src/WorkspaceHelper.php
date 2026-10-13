@@ -237,8 +237,13 @@ class WorkspaceHelper
         /** @var EventDispatcher $eventDispatcher */
         $eventDispatcher = \Pimcore::getContainer()->get('event_dispatcher');
         $eventDispatcher->dispatch($event, PermissionEvents::PRE_CHECK);
-        if (!$event->isGranted() && PimcoreDataHubBundle::getNotAllowedPolicy() === PimcoreDataHubBundle::NOT_ALLOWED_POLICY_EXCEPTION) {
-            throw new ClientSafeException('access for '.  $element->getFullPath() . ' denied');
+        if (!$event->isGranted()) {
+            if (PimcoreDataHubBundle::getNotAllowedPolicy() === PimcoreDataHubBundle::NOT_ALLOWED_POLICY_EXCEPTION) {
+                throw new ClientSafeException('access for '.  $element->getFullPath() . ' denied');
+            }
+
+            // Under the default policy a denied element is omitted, the same as one the workspace refuses.
+            return false;
         }
 
         $isAllowed = self::isAllowed($element, $configuration, $type);
